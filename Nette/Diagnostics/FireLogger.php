@@ -32,6 +32,9 @@ class FireLogger extends Nette\Object
 	private static $payload = array('logs' => array());
 
 
+	public static function isEnabled() {
+		return isset($_SERVER['HTTP_X_FIRELOGGER']);
+	}
 
 	/**
 	 * Sends message to FireLogger console.
@@ -40,7 +43,7 @@ class FireLogger extends Nette\Object
 	 */
 	public static function log($message, $priority = self::DEBUG)
 	{
-		if (!isset($_SERVER['HTTP_X_FIRELOGGER']) || headers_sent()) {
+		if (!static::isEnabled() || headers_sent()) {
 			return FALSE;
 		}
 
