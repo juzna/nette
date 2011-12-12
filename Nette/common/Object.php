@@ -59,6 +59,16 @@ abstract class Object
 {
 
 	/**
+	 * Class name
+	 * @return string
+	 */
+	public /**/static/**/ function getClassName()
+	{
+		return /*5.2*get_class($this)*//**/get_called_class()/**/;
+	}
+
+
+	/**
 	 * Access to reflection.
 	 * @return Nette\Reflection\ClassType
 	 */
