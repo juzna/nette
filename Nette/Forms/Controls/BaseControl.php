@@ -79,6 +79,9 @@ abstract class BaseControl extends Nette\ComponentModel\Component implements ICo
 	/** @var array user options */
 	private $options = array();
 
+	/** @var string property of model to which is this field bound */
+	private $dataBinding = NULL;
+
 
 
 	/**
@@ -678,4 +681,21 @@ abstract class BaseControl extends Nette\ComponentModel\Component implements ICo
 		$this->errors = array();
 	}
 
+	/**
+	 * @param string $propertyName
+	 * @return BaseControl
+	 */
+	public function bind($propertyName)
+	{
+		$this->dataBinding = $propertyName;
+		return $this;
+	}
+
+	/**
+	 * @return string|null
+	 */
+	public function getDataBinding()
+	{
+		return $this->dataBinding;
+	}
 }
