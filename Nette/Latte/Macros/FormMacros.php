@@ -38,7 +38,7 @@ class FormMacros extends MacroSet
 	{
 		$me = new static($compiler);
 		$me->addMacro('form', array($me, 'macroForm'), array($me, 'macroFormEnd'));
-		$me->addMacro('label', array($me, 'macroLabel'), '?></label><?php');
+		$me->addMacro('label', array($me, 'macroLabel'), '?></label><?php', false);
 		$me->addMacro('input', 'echo $_form[%node.word]->getControl()->addAttributes(%node.array)', NULL, array($me, 'macroAttrInput'));
 		$me->addMacro('formContainer', '$_formStack[] = $_form; $formContainer = $_form = $_form[%node.word]', '$_form = array_pop($_formStack)');
 	}
