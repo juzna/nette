@@ -49,8 +49,9 @@ class Engine extends Nette\Object
 	 * @param  string
 	 * @return string
 	 */
-	public function __invoke($s)
+	public function __invoke($s, $metadata = null)
 	{
+		$this->compiler->templateMetadata = $metadata;
 		return $this->compiler->compile($this->parser->parse($s));
 	}
 

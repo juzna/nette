@@ -26,6 +26,9 @@ class Template extends Nette\Object implements ITemplate
 	/** @var array of function(Template $sender); Occurs before a template is compiled - implement to customize the filters */
 	public $onPrepareFilters = array();
 
+	/** @var array */
+	public $metadata;
+
 	/** @var string */
 	private $source;
 
@@ -150,7 +153,7 @@ class Template extends Nette\Object implements ITemplate
 		$code = $this->getSource();
 		foreach ($this->filters as $filter) {
 			$code = self::extractPhp($code, $blocks);
-			$code = $filter/*5.2*->invoke*/($code);
+			$code = $filter/*5.2*->invoke*/($code, $this->metadata);
 			$code = strtr($code, $blocks); // put PHP code back
 		}
 

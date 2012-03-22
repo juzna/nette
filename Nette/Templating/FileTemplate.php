@@ -100,6 +100,7 @@ class FileTemplate extends Template implements IFileTemplate
 		$cached = $compiled = $cache->load($this->file);
 
 		if ($compiled === NULL) {
+			$this->metadata['file'] = $this->file;
 			try {
 				$compiled = "<?php\n\n// source file: $this->file\n\n?>" . $this->compile();
 

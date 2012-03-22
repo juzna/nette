@@ -103,6 +103,14 @@ class UIMacros extends MacroSet
 			foreach ($this->namedBlocks as $name => $code) {
 				$func = '_lb' . substr(md5($this->getCompiler()->getTemplateId() . $name), 0, 10) . '_' . preg_replace('#[^a-z0-9_]#i', '_', $name);
 				$snippet = $name[0] === '_';
+
+				// debug wrapper
+				$func2 = $func . '_wrapper';
+				$prolog[] = "\n"
+					. "if (!function_exists(\$_l->blocks[" . var_export($name, TRUE) . "][] = '$func2')) { "
+					. "function $func2(\$_l, \$_args) { "
+					. "\n?><x-latte-block name=\"$name\" file=\"{$this->getCompiler()->templateMetadata['file']}\"><?php $func(\$_l, \$_args); ?></x-latte-block><?php\n}}";
+
 				$prolog[] = "//\n// block $name\n//\n"
 					. "if (!function_exists(\$_l->blocks[" . var_export($name, TRUE) . "][] = '$func')) { "
 					. "function $func(\$_l, \$_args) { "
@@ -135,6 +143,10 @@ if (!empty($_control->snippetMode)) {
 }';
 		}
 
+		// debug wrapper
+/*		$prolog[] = "\n?><x-latte-file file=\"{$this->getCompiler()->templateMetadata['file']}\">\n<?php\n";
+		$epilog[] = "\n?></x-latte-file>\n<?php\n";
+*/
 		return array(implode("\n\n", $prolog), implode("\n", $epilog));
 	}
 

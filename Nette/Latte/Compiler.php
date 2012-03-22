@@ -26,6 +26,9 @@ class Compiler extends Nette\Object
 	/** @var string default content type */
 	public $defaultContentType = self::CONTENT_XHTML;
 
+	/** @var array */
+	public $templateMetadata;
+
 	/** @var array of Token */
 	private $tokens;
 
@@ -98,7 +101,7 @@ class Compiler extends Nette\Object
 
 	/**
 	 * Compiles tokens to PHP code.
-	 * @param  array
+	 * @param  Token[] $tokens
 	 * @return string
 	 */
 	public function compile(array $tokens)
