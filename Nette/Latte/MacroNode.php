@@ -32,7 +32,7 @@ class MacroNode extends Nette\Object
 	/** @var string */
 	public $name;
 
-	/** @var bool */
+	/** @var bool Has no children, i.e. not paired macro */
 	public $isEmpty = FALSE;
 
 	/** @var string  raw arguments */

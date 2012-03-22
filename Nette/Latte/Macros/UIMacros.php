@@ -496,7 +496,7 @@ if (!empty($_control->snippetMode)) {
 				}
 				ob_start();
 				$function = reset($function);
-				$snippets = $function($local, $params);
+				$snippets = $function($local, $params); // returns inner dynamic snippets
 				$payload->snippets[$id = $control->getSnippetId(substr($name, 1))] = ob_get_clean();
 				if ($snippets) {
 					$payload->snippets += $snippets;

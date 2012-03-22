@@ -202,7 +202,7 @@ class Container extends Nette\ComponentModel\Container implements \ArrayAccess
 
 	/**
 	 * Iterates over all form controls.
-	 * @return \ArrayIterator
+	 * @return Controls\BaseControl[]|\ArrayIterator
 	 */
 	public function getControls()
 	{
