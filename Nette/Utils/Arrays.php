@@ -196,4 +196,26 @@ final class Arrays
 		return $res;
 	}
 
+
+
+	/**
+	 * Takes only one dimension in multi-dimensional array (or property from array of objects)
+	 * @param  array
+	 * @param  string  key taken from each item
+	 * @param  bool    check whether key is present first
+	 * @return array
+	 */
+	public static function pluck(array $arr, $key, $check = FALSE)
+	{
+		$ret = array();
+		foreach($arr as $item) {
+			if (is_array($item)) {
+				if (!$check || array_key_exists($key, $item)) $ret[] = $item[$key];
+			} elseif (is_object($item)) {
+				if (!$check || isset($item->$key)) $ret[] = $item->$key;
+			}
+		}
+		return $ret;
+	}
+
 }
