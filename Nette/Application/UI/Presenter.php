@@ -1465,10 +1465,11 @@ abstract class Presenter extends Control implements Application\IPresenter
 
 
 	/**
-	 * @return Nette\Http\Session
+	 * @return Nette\Http\Session|Nette\Http\SessionSection
 	 */
 	public function getSession($namespace = NULL)
 	{
+		/** @var Nette\Http\Session $handler */
 		$handler = $this->context->getByType('Nette\Http\Session');
 		return $namespace === NULL ? $handler : $handler->getSection($namespace);
 	}
