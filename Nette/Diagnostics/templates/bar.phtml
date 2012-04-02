@@ -382,7 +382,13 @@ use Nette;
 		var debug = document.getElementById('nette-debug');
 		document.body.appendChild(debug);
 		debug.innerHTML = <?php echo json_encode(Nette\Utils\Strings::fixEncoding($output)) ?>;
-		for (var i = 0, scripts = debug.getElementsByTagName('script'); i < scripts.length; i++) eval(scripts[i].innerHTML);
+		for (var i = 0, scripts = debug.getElementsByTagName('script'); i < scripts.length; i++) {
+			try {
+				eval(scripts[i].innerHTML);
+			} catch(e) {
+				console.log("Error in debug panel:", $(scripts[i]).closest('.nette-panel').attr('id'), e);
+			}
+		}
 		(new Nette.DebugBar).init();
 		debug.style.display = 'block';
 	};
