@@ -72,14 +72,7 @@ class Tokenizer extends Nette\Object
 			$count = count($this->types);
 			$line = 1;
 			foreach ($this->tokens as & $match) {
-				$type = NULL;
-				for ($i = 1; $i <= $count; $i++) {
-					if (!isset($match[$i])) {
-						break;
-					} elseif ($match[$i] != NULL) {
-						$type = $this->types[$i - 1]; break;
-					}
-				}
+				$type = $this->types[count($match) - 2];
 				$match = self::createToken($match[0], $type, $line);
 				$len += strlen($match['value']);
 				$line += substr_count($match['value'], "\n");
