@@ -84,7 +84,6 @@ class Neon extends Nette\Object
 					$s .= ($isList ? '-' : self::encode($k) . ':')
 						. (Strings::contains($v, "\n") ? "\n\t" . str_replace("\n", "\n\t", $v) : ' ' . $v)
 						. "\n";
-					continue;
 				}
 				return $s;
 
