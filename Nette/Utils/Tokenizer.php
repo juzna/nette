@@ -37,7 +37,7 @@ class Tokenizer extends Nette\Object
 	/** @var string */
 	private $re;
 
-	/** @var array */
+	/** @var array|bool */
 	private $types;
 
 	/** @var array|string */
