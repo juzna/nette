@@ -46,6 +46,9 @@ class Connection extends Nette\Object
 	/** @var PDO */
 	private $pdo;
 
+	/** @var IRowFactory */
+	private $rowFactory;
+
 
 	public function __construct($dsn, $user = NULL, $password = NULL, array $options = NULL)
 	{
@@ -133,6 +136,23 @@ class Connection extends Nette\Object
 	function commit()
 	{
 		$this->queryArgs('::commit', array());
+	}
+
+
+
+	public function setRowFactory(IRowFactory $rowFactory)
+	{
+		$this->rowFactory = $rowFactory;
+	}
+
+
+
+	/**
+	 * @return IRowFactory
+	 */
+	public function getRowFactory()
+	{
+		return $this->rowFactory;
 	}
 
 
