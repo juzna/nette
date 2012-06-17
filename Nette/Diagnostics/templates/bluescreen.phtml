@@ -348,9 +348,9 @@ $counter = 0;
 
 
 			<?php $stack = method_exists($ex, 'getMyTrace') ? $ex->getMyTrace() : $ex->getTrace(); $expanded = NULL ?>
-			<?php if (strpos($ex->getFile(), $expandPath) === 0) {
+			<?php if (Helpers::isCollapsed($this, $ex->getFile()) ) {
 				foreach ($stack as $key => $row) {
-					if (isset($row['file']) && strpos($row['file'], $expandPath) !== 0) { $expanded = $key; break; }
+					if (isset($row['file']) && !Helpers::isCollapsed($this, $row['file'])) { $expanded = $key; break; }
 				}
 			} ?>
 
