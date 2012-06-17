@@ -21,7 +21,7 @@ $log = array();
 foreach ($connection->table('book')->where('author_id', 11) as /** @var \Nette\Database\Table\ActiveRow $book */ $book) {
 	$log[] = "$book->id: $book->title";
 
-	foreach ($book->related('book_tag')->ref('tag') as $tag) {
+	foreach ($book->related('book_tag')->toOne('tag') as $tag) {
 		$log[] = " - $tag->name";
 	}
 }
@@ -40,7 +40,7 @@ $log = array();
 foreach ($connection->table('book')->where('author_id', 11) as /** @var \Nette\Database\Table\ActiveRow $book */ $book) {
 	$log[] = "$book->id: $book->title";
 
-	foreach ($book->related('book_tag')->where('approved = 1')->ref('tag') as $tag) {
+	foreach ($book->related('book_tag')->where('approved = 1')->toOne('tag') as $tag) {
 		$log[] =  " - $tag->name";
 	}
 }

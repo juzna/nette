@@ -85,7 +85,7 @@ QueryLogger::clear();
 $log = array();
 foreach ($connection->table('company') as $company) {
 	$log[] = "Company $company->name";
-	foreach ($company->related('author')->related('book')->related('book_tag')->ref('tag') as $tag) {
+	foreach ($company->related('author')->related('book')->related('book_tag')->toOne('tag') as $tag) {
 		$log[] = $tag->name;
 	}
 }

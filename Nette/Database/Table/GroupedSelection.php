@@ -170,7 +170,8 @@ class GroupedSelection extends AbstractGroupedSelection
 
 	/*****************  misc  *****************j*d*/
 
-	public function related($key, $throughColumn = NULL)
+	public function related($key, $throughColumn = NULL) { return $this->toMany($key, $throughColumn); }
+	public function toMany($key, $throughColumn = NULL)
 	{
 		if (strpos($key, '.') !== FALSE) {
 			list($key, $throughColumn) = explode('.', $key);
@@ -211,7 +212,8 @@ class GroupedSelection extends AbstractGroupedSelection
 
 
 
-	public function ref($key, $throughColumn = NULL)
+	public function ref($key, $throughColumn = NULL) { return $this->toOne($key, $throughColumn); }
+	public function toOne($key, $throughColumn = NULL)
 	{
 		if (!$throughColumn) {
 			list($key, $throughColumn) = $this->connection->getDatabaseReflection()->getBelongsToReference($this->name, $key);
@@ -240,7 +242,6 @@ class GroupedSelection extends AbstractGroupedSelection
 		$c = clone $p; // clone prototype
 		$c->setActive($this->active);
 		return $c;
-
 	}
 
 
