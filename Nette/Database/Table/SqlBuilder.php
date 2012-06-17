@@ -127,6 +127,13 @@ class SqlBuilder extends Nette\Object
 	}
 
 
+	public function resetSelect()
+	{
+		$this->dirty();
+		$this->select = array();
+	}
+
+
 
 	public function addWhere($condition, $parameters = array())
 	{
@@ -137,7 +144,7 @@ class SqlBuilder extends Nette\Object
 		}
 
 		$this->conditions[$hash] = $condition;
-		$condition = $this->prefixColumns($condition); // not ambiguous
+//		$condition = $this->prefixColumns($condition); // not ambiguous
 		$condition = $this->removeExtraTables($condition);
 		$condition = $this->tryDelimite($condition);
 

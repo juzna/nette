@@ -185,7 +185,20 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 
 
 	/**
-	 * Loads cache of previous accessed columns and returns it.
+	 * Get query to fetch primary keys; can be used in sub-queries
+	 * @return string
+	 */
+	public function getPrimaryKeyListSql() {
+		$builder = clone $this->sqlBuilder;
+		$builder->resetSelect();
+		$builder->select($this->primary);
+		return $builder->getSql();
+	}
+
+
+
+	/**
+	 * Loads cache of previous accessed columns and returns it
 	 * @internal
 	 * @return array|false
 	 */
