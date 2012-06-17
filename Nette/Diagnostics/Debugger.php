@@ -371,7 +371,7 @@ final class Debugger
 		);
 		$error = error_get_last();
 		if (isset($types[$error['type']])) {
-			self::_exceptionHandler(new Nette\FatalErrorException($error['message'], 0, $error['type'], $error['file'], $error['line'], NULL));
+			self::_exceptionHandler(new Nette\FatalErrorException($error['message'], 0, $error['type'], $error['file'], $error['line'], NULL, NULL, isset($error['trace']) ? $error['trace'] : NULL));
 		}
 
 		// debug bar (require HTML & development mode)

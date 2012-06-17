@@ -154,10 +154,18 @@ class StaticClassException extends \LogicException
 class FatalErrorException extends \ErrorException
 {
 
-	public function __construct($message, $code, $severity, $file, $line, $context, \Exception $previous = NULL)
+	public function __construct($message, $code, $severity, $file, $line, $context, \Exception $previous = NULL, $trace = NULL)
 	{
 		parent::__construct($message, $code, $severity, $file, $line, $previous);
 		$this->context = $context;
+		$this->trace = $trace; // only available in patched php
+	}
+
+
+
+	public function getMyTrace()
+	{
+		return $this->trace ?: $this->getTrace();
 	}
 
 }
