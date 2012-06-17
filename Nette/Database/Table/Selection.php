@@ -864,4 +864,30 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 		unset($this->data[$key]);
 	}
 
+
+
+	/**
+	 * Fetch only the first column
+	 * @return array
+	 */
+	public function fetchColumn($col = 0) {
+		$result = array();
+		foreach ($this as $row) {
+			$tmp = $row->toArray();
+			$result[] = $tmp[$col];
+		}
+		return $result;
+	}
+
+
+
+	/**
+	 * Convenient method to fetch all rows indexed by a column (or a primary key)
+	 * @param string $key
+	 * @return ActiveRow[]
+	 */
+	public function fetchIndexed($key = NULL) {
+		return $this->fetchPairs($key ? : $this->primary);
+	}
+
 }
