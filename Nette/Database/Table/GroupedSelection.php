@@ -168,6 +168,42 @@ class GroupedSelection extends AbstractGroupedSelection
 	}
 
 
+	/*****************  misc  *****************j*d*/
+
+	public function related($key, $throughColumn = NULL)
+	{
+		if (strpos($key, '.') !== FALSE) {
+			list($key, $throughColumn) = explode('.', $key);
+		} elseif (!is_string($throughColumn)) {
+			list($key, $throughColumn) = $this->getConnection()->getDatabaseReflection()->getHasManyReference($this->getName(), $key);
+		}
+		$table = $key;
+
+
+		$p = & $this->getReferencingCachedData("DoubleRelated:$table.$throughColumn");
+		if (!$p) {
+			// Prepare mapping
+			{
+				if(!$this->sqlBuilder->getSelect()) {
+					$this->sqlBuilder->select("$this->primary, $this->column");
+				}
+
+				$this->execute();
+				$mapping = array();
+				foreach($this->rows as $row) $mapping[$row->{$this->primary}] = $row->{$this->column}; // authorId -> companyId
+			}
+
+
+			$p = new DoubleGroupedSelection($this, $table, $throughColumn, $mapping);
+			$p->where("$table.$throughColumn", array_keys($mapping));
+		}
+
+		$c = clone $p; // clone prototype
+		$c->setActive($this->active);
+		return $c;
+	}
+
+
 
 	public function ref($key, $throughColumn = NULL)
 	{
