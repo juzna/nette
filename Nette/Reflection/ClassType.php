@@ -80,6 +80,12 @@ class ClassType extends \ReflectionClass
 		return $this->isSubclassOf($type) || strcasecmp($this->getName(), ltrim($type, '\\')) === 0;
 	}
 
+	public function getFileName()
+	{
+		$path = parent::getFileName();
+		if (preg_match('~^enhance://~', $path)) return substr($path, 10);
+		else return $path;
+	}
 
 
 	/********************* Reflection layer ****************d*g**/
