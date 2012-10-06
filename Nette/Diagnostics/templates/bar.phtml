@@ -23,6 +23,7 @@ use Nette;
 
 <!-- Nette Debug Bar -->
 
+<?php if (!$contentOnly): ?>
 <?php ob_start() ?>
 &nbsp;
 
@@ -346,7 +347,7 @@ use Nette;
 <?php require __DIR__ . '/bar.js' ?>
 /* ]]> */
 </script>
-
+<?php endif; // !$contentOnly ?>
 
 <?php foreach ($panels as $id => $panel): if (!$panel['panel']) continue; ?>
 	<div class="nette-panel" id="nette-debug-panel-<?php echo $panel['id'] ?>">
@@ -370,6 +371,7 @@ use Nette;
 		<li><a href="#" rel="close" title="close debug bar">&times;</a></li>
 	</ul>
 </div>
+<?php if(!$contentOnly): ?>
 <?php $output = ob_get_clean(); ?>
 
 
@@ -394,5 +396,6 @@ use Nette;
 	};
 })(window.onload);
 </script>
+<?php endif; // !$contentOnly ?>
 
 <!-- /Nette Debug Bar -->

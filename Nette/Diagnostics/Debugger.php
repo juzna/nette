@@ -206,6 +206,10 @@ final class Debugger
 		});
 
 		self::$bar = new Bar;
+		if (isset($_SERVER['HTTP_NETTE_DEBUGGER_VIEW'])) {
+			self::$bar->render(TRUE);
+			exit;
+		}
 		self::$bar->addPanel(new DefaultBarPanel('time'));
 		self::$bar->addPanel(new DefaultBarPanel('memory'));
 		self::$bar->addPanel(self::$errorPanel = new DefaultBarPanel('errors')); // filled by _errorHandler()
@@ -392,9 +396,8 @@ final class Debugger
 			if(self::isHtmlMode()) {
 				self::$bar->render();
 
-			} elseif (self::$intermediateDebugFile) {
-				file_put_contents(self::$intermediateDebugFile, self::$bar->__toString());
-				@chmod(self::$intermediateDebugFile, 0666);
+			} elseif (self::$ajaxDetected && isset($_SERVER['HTTP_NETTE_DEBUGGER_STORE_AJAX'])) {
+				self::$bar->store();
 			}
 		}
 	}

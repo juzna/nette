@@ -63,35 +63,17 @@ class Bar extends Nette\Object
 	 * Renders debug bar.
 	 * @return void
 	 */
-	public function render()
+	public function render($contentOnly = FALSE)
 	{
-		$obLevel = ob_get_level();
-		$panels = array();
-		foreach ($this->panels as $id => $panel) {
-			try {
-				$panels[] = array(
-					'id' => preg_replace('#[^a-z0-9]+#i', '-', $id),
-					'tab' => $tab = (string) $panel->getTab(),
-					'panel' => $tab ? (string) $panel->getPanel() : NULL,
-				);
-			} catch (\Exception $e) {
-				$panels[] = array(
-					'id' => "error-" . preg_replace('#[^a-z0-9]+#i', '-', $id),
-					'tab' => "Error in $id",
-					'panel' => '<h1>Error: ' . $id . '</h1><div class="nette-inner">' . nl2br(htmlSpecialChars($e)) . '</div>',
-				);
-				while (ob_get_level() > $obLevel) { // restore ob-level if broken
-					ob_end_clean();
-				}
-			}
+		if (preg_match('#^Location:#im', implode("\n", headers_list()))) {
+			$this->store();
+			return;
 		}
+
+		$panels = $this->renderPanels();
 
 		@session_start();
 		$session = & $_SESSION['__NF']['debuggerbar'];
-		if (preg_match('#^Location:#im', implode("\n", headers_list()))) {
-			$session[] = $panels;
-			return;
-		}
 
 		foreach (array_reverse((array) $session) as $reqId => $oldpanels) {
 			$panels[] = array(
@@ -111,11 +93,50 @@ class Bar extends Nette\Object
 
 
 
-	public function __toString()
+	/**
+	 * Store panels to session for later retrieval (used in redirects and ajax)
+	 */
+	public function store()
 	{
-		ob_start();
-		$this->render();
-		return ob_get_clean();
+		@session_start();
+		$session = &$_SESSION['__NF']['debuggerbar'];
+		$session[] = $this->renderPanels();
+	}
+
+
+
+	/*****************  internal  *****************d*g*/
+
+
+
+	/**
+	 * Render all panels into array
+	 * @internal
+	 * @return array
+	 */
+	private function renderPanels()
+	{
+		$obLevel = ob_get_level();
+		$panels  = array();
+		foreach($this->panels as $id => $panel) {
+			try {
+				$panels[] = array(
+					'id'    => preg_replace('#[^a-z0-9]+#i', '-', $id),
+					'tab'   => $tab = (string)$panel->getTab(),
+					'panel' => $tab ? (string)$panel->getPanel() : NULL,
+				);
+			} catch(\Exception $e) {
+				$panels[] = array(
+					'id'    => "error-" . preg_replace('#[^a-z0-9]+#i', '-', $id),
+					'tab'   => "Error in $id",
+					'panel' => '<h1>Error: ' . $id . '</h1><div class="nette-inner">' . nl2br(htmlSpecialChars($e)) . '</div>',
+				);
+				while(ob_get_level() > $obLevel) { // restore ob-level if broken
+					ob_end_clean();
+				}
+			}
+		}
+		return $panels;
 	}
 
 }
