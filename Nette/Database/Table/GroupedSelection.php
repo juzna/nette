@@ -193,14 +193,20 @@ class GroupedSelection extends AbstractGroupedSelection
 				foreach($this->rows as $row) $mapping[$row->{$this->primary}] = $row->{$this->column}; // authorId -> companyId
 			}
 
-
-			$p = new DoubleGroupedSelection($this, $table, $throughColumn, $mapping);
+			$p = $this->createDoubleGroupedSelectionInstance($table, $throughColumn, $mapping);
 			$p->where("$table.$throughColumn", array_keys($mapping));
 		}
 
 		$c = clone $p; // clone prototype
 		$c->setActive($this->active);
 		return $c;
+	}
+
+
+
+	protected function createDoubleGroupedSelectionInstance($table, $throughColumn, $mapping)
+	{
+		return new DoubleGroupedSelection($this, $table, $throughColumn, $mapping);
 	}
 
 
@@ -227,8 +233,7 @@ class GroupedSelection extends AbstractGroupedSelection
 				foreach($this->rows as $row) $mapping[$row->$throughColumn][] = $row->{$this->column}; // tagId -> bookId[]
 			}
 
-
-			$p = new MNGroupedSelection($this, $table, $mapping);
+			$p = $this->createMNGroupedSelectionInstance($table, $mapping);
 			$p->where("$table.{$p->primary}", array_keys($mapping));
 		}
 
@@ -236,6 +241,13 @@ class GroupedSelection extends AbstractGroupedSelection
 		$c->setActive($this->active);
 		return $c;
 
+	}
+
+
+
+	protected function createMNGroupedSelectionInstance($table, $mapping)
+	{
+		return new MNGroupedSelection($this, $table, $mapping);
 	}
 
 }

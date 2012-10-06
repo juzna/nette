@@ -70,6 +70,33 @@ class DoubleGroupedSelection extends GroupedSelection
 
 
 
+	protected function createDoubleGroupedSelectionInstance($table, $throughColumn, $mapping)
+	{
+		// Remap
+		$m2 = array();
+		foreach ($mapping as $a => $b) {
+			$m2[$a] = $this->mapping[$b];
+		}
+
+		return parent::createDoubleGroupedSelectionInstance($table, $throughColumn, $m2);
+	}
+
+
+
+	protected function createMNGroupedSelectionInstance($table, $mapping)
+	{
+		foreach ($mapping as $tagId => $bookList) {
+			$m3 = array();
+			foreach ($bookList as $bookId) {
+				$m3[] = $this->mapping[$bookId];
+			}
+			$mapping[$tagId] = $m3;
+		}
+
+		return parent::createMNGroupedSelectionInstance($table, $mapping);
+	}
+
+
 	protected function calculateAggregation($function) {
 		throw new \Nette\NotImplementedException;
 	}

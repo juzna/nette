@@ -58,22 +58,45 @@ Assert::equal(array(
 
 // 3x
 QueryLogger::clear();
+$log = array();
 foreach ($connection->table('company') as $company) {
-	echo "Company $company->name\n";
+	$log[] = "Company $company->name";
 	foreach ($company->related('author')->related('book')->related('book_tag') as $tag) {
-		echo $tag->approved . ', ';
+		$log[] = $tag->tag->name;
 	}
 }
-dump(QueryLogger::$queries);
+Assert::equal(array(
+	'Company Facebook',
+	'PHP',
+	'MySQL',
+	'JavaScript',
+	'Company Nette Foundation',
+	'PHP', // Note this tag is here twice because we iterate over each book_tag
+	'PHP',
+	'MySQL',
+	'Company JuznaSoft',
+), $log);
+Assert::same(5, count(QueryLogger::$queries)); // company + author + book + book_tag + tag
 
 
 
 // 3x + ref
 QueryLogger::clear();
+$log = array();
 foreach ($connection->table('company') as $company) {
-	echo "Company $company->name\n";
+	$log[] = "Company $company->name";
 	foreach ($company->related('author')->related('book')->related('book_tag')->ref('tag') as $tag) {
-		echo $tag->name . ', ';
+		$log[] = $tag->name;
 	}
 }
-dump(QueryLogger::$queries);
+Assert::equal(array(
+	'Company Facebook',
+	'PHP',
+	'MySQL',
+	'JavaScript',
+	'Company Nette Foundation',
+	'PHP',
+	'MySQL',
+	'Company JuznaSoft',
+), $log);
+Assert::same(5, count(QueryLogger::$queries)); // company + author + book + book_tag + tag
