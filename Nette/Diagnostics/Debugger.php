@@ -117,6 +117,9 @@ final class Debugger
 	/** @deprecated */
 	public static $emailSnooze;
 
+	/** @var string */
+	public static $intermediateDebugFile;
+
 	/********************* debug bar ****************d*g**/
 
 	/** @var Bar */
@@ -254,6 +257,16 @@ final class Debugger
 		if (self::$logDirectory) {
 			ini_set('error_log', self::$logDirectory . '/php_error.log');
 		}
+		if (isset($_SERVER['HTTP_NETTE_DEBUG_HELPER'])) {
+			$dir = TEMP_DIR . '/_Nette.DebugHelper';
+			if (!file_exists($dir)) {
+				mkdir($dir);
+			}
+			self::$intermediateDebugFile = tempnam($dir, $_SERVER['HTTP_NETTE_DEBUG_HELPER']);
+			if (!headers_sent()) {
+				header("Nette-Debug-Nonce: " . basename(self::$intermediateDebugFile));
+			}
+		}
 
 		// php configuration
 		if (function_exists('ini_set')) {
@@ -374,9 +387,15 @@ final class Debugger
 			self::_exceptionHandler(new Nette\FatalErrorException($error['message'], 0, $error['type'], $error['file'], $error['line'], NULL, NULL, isset($error['trace']) ? $error['trace'] : NULL));
 		}
 
-		// debug bar (require HTML & development mode)
-		if (!connection_aborted() && self::$bar && !self::$productionMode && self::isHtmlMode()) {
-			self::$bar->render();
+		// debug bar (requires development mode)
+		if (!connection_aborted() && self::$bar && !self::$productionMode) {
+			if(self::isHtmlMode()) {
+				self::$bar->render();
+
+			} elseif (self::$intermediateDebugFile) {
+				file_put_contents(self::$intermediateDebugFile, self::$bar->__toString());
+				@chmod(self::$intermediateDebugFile, 0666);
+			}
 		}
 	}
 

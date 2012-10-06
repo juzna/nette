@@ -109,4 +109,13 @@ class Bar extends Nette\Object
 		require __DIR__ . '/templates/bar.phtml';
 	}
 
+
+
+	public function __toString()
+	{
+		ob_start();
+		$this->render();
+		return ob_get_clean();
+	}
+
 }
