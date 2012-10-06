@@ -67,17 +67,18 @@ DROP TABLE IF EXISTS book_tag;
 CREATE TABLE book_tag (
 	book_id int NOT NULL,
 	tag_id int NOT NULL,
+	approved bit NOT NULL,
 	PRIMARY KEY (book_id, tag_id),
 	CONSTRAINT book_tag_tag FOREIGN KEY (tag_id) REFERENCES tag (id),
 	CONSTRAINT book_tag_book FOREIGN KEY (book_id) REFERENCES book (id) ON DELETE CASCADE
 );
 
-INSERT INTO book_tag (book_id, tag_id) VALUES (1, 21);
-INSERT INTO book_tag (book_id, tag_id) VALUES (3, 21);
-INSERT INTO book_tag (book_id, tag_id) VALUES (4, 21);
-INSERT INTO book_tag (book_id, tag_id) VALUES (1, 22);
-INSERT INTO book_tag (book_id, tag_id) VALUES (4, 22);
-INSERT INTO book_tag (book_id, tag_id) VALUES (2, 23);
+INSERT INTO book_tag (book_id, tag_id, approved) VALUES (1, 21, 1);
+INSERT INTO book_tag (book_id, tag_id, approved) VALUES (3, 21, 1);
+INSERT INTO book_tag (book_id, tag_id, approved) VALUES (4, 21, 0);
+INSERT INTO book_tag (book_id, tag_id, approved) VALUES (1, 22, 0);
+INSERT INTO book_tag (book_id, tag_id, approved) VALUES (4, 22, 0);
+INSERT INTO book_tag (book_id, tag_id, approved) VALUES (2, 23, 1);
 
 DROP TABLE IF EXISTS book_tag_alt;
 CREATE TABLE book_tag_alt (

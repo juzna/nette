@@ -45,10 +45,8 @@ class MNGroupedSelection extends AbstractGroupedSelection
 
 
 
-	protected function doMapping(&$rows, &$output)
+	protected function doMapping(&$rows, &$output, $limit)
 	{
-		$limit = $this->sqlBuilder->getLimit();
-
 		$offset = array();
 		foreach ($rows as $key => $row) {
 			$iid = $row[$this->primary]; // item id

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Test: Nette\Database\Table: M:N relationship
+ * Test: Nette\Database\Table: M:N relationship with conditionals
  *
  * @author     Jakub Vrana
  * @author     Jan Skrasek
@@ -16,21 +16,10 @@ Nette\Database\Helpers::loadFromFile($connection, __DIR__ . "/{$driverName}-nett
 
 
 
-// full parameters given
 foreach ($connection->table('book')->where('author_id', 11) as /** @var \Nette\Database\Table\ActiveRow $book */ $book) {
 	echo "$book->id: $book->title\n";
 
-	foreach ($book->relatedMN('book_tag', 'book_id', 'tag', 'tag_id') as $tag) {
-		echo " - $tag->name\n";
-	}
-}
-
-
-// just tables (and guess the column names)
-foreach ($connection->table('book')->where('author_id', 11) as /** @var \Nette\Database\Table\ActiveRow $book */ $book) {
-	echo "$book->id: $book->title\n";
-
-	foreach ($book->relatedMN('book_tag', 'tag') as $tag) {
+	foreach ($book->related('book_tag')->where('approved = 1')->ref('tag') as $tag) {
 		echo " - $tag->name\n";
 	}
 }

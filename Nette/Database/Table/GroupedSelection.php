@@ -167,4 +167,39 @@ class GroupedSelection extends AbstractGroupedSelection
 		return $return;
 	}
 
+
+
+	public function ref($key, $throughColumn = NULL)
+	{
+		if (!$throughColumn) {
+			list($key, $throughColumn) = $this->connection->getDatabaseReflection()->getBelongsToReference($this->name, $key);
+		}
+		$table = $key;
+
+
+
+		$p = & $this->getRefTable($refPath)->referencing[$refPath . "1-n-1:$table.$throughColumn"];
+		if (!$p) {
+			// Prepare mapping
+			{
+				if(!$this->sqlBuilder->getSelect()) {
+					$this->sqlBuilder->addSelect("$this->column, $throughColumn");
+				}
+
+				$this->execute();
+				$mapping = array();
+				foreach($this->rows as $row) $mapping[$row->$throughColumn][] = $row->{$this->column}; // tagId -> bookId[]
+			}
+
+
+			$p = new MNGroupedSelection($this, $table, $mapping);
+			$p->where("$table.{$p->primary}", array_keys($mapping));
+		}
+
+		$c = clone $p; // clone prototype
+		$c->setActive($this->active);
+		return $c;
+
+	}
+
 }
