@@ -6,17 +6,32 @@ USE nette_test;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS company;
+CREATE TABLE company (
+	id int NOT NULL AUTO_INCREMENT,
+	name varchar(30) NOT NULL,
+	web varchar(100) NOT NULL,
+	PRIMARY KEY(id)
+) AUTO_INCREMENT=44;
+
+INSERT INTO company (id, name, web) VALUES (41, 'Facebook', 'http://facebook.com');
+INSERT INTO company (id, name, web) VALUES (42, 'Nette Foundation', 'http://nette.org');
+INSERT INTO company (id, name, web) VALUES (43, 'JuznaSoft', 'http://juzna.cz');
+
 DROP TABLE IF EXISTS author;
 CREATE TABLE author (
 	id int NOT NULL AUTO_INCREMENT,
 	name varchar(30) NOT NULL,
 	web varchar(100) NOT NULL,
 	born date DEFAULT NULL,
-	PRIMARY KEY(id)
-) AUTO_INCREMENT=13;
+	company_id int DEFAULT NULL,
+	PRIMARY KEY(id),
+	CONSTRAINT author_company FOREIGN KEY (company_id) REFERENCES company (id)
+) AUTO_INCREMENT=14;
 
-INSERT INTO author (id, name, web, born) VALUES (11, 'Jakub Vrana', 'http://www.vrana.cz/', NULL);
-INSERT INTO author (id, name, web, born) VALUES (12, 'David Grudl', 'http://davidgrudl.com/', NULL);
+INSERT INTO author (id, name, web, born, company_id) VALUES (11, 'Jakub Vrana', 'http://www.vrana.cz/', NULL, 41);
+INSERT INTO author (id, name, web, born, company_id) VALUES (12, 'David Grudl', 'http://davidgrudl.com/', NULL, 42);
+INSERT INTO author (id, name, web, born, company_id) VALUES (13, 'Jan Dolecek', 'http://blog.juzna.cz/', NULL, 43);
 
 DROP TABLE IF EXISTS tag;
 CREATE TABLE tag (
@@ -52,17 +67,18 @@ DROP TABLE IF EXISTS book_tag;
 CREATE TABLE book_tag (
 	book_id int NOT NULL,
 	tag_id int NOT NULL,
+	approved bit NOT NULL,
 	PRIMARY KEY (book_id, tag_id),
 	CONSTRAINT book_tag_tag FOREIGN KEY (tag_id) REFERENCES tag (id),
 	CONSTRAINT book_tag_book FOREIGN KEY (book_id) REFERENCES book (id) ON DELETE CASCADE
 );
 
-INSERT INTO book_tag (book_id, tag_id) VALUES (1, 21);
-INSERT INTO book_tag (book_id, tag_id) VALUES (3, 21);
-INSERT INTO book_tag (book_id, tag_id) VALUES (4, 21);
-INSERT INTO book_tag (book_id, tag_id) VALUES (1, 22);
-INSERT INTO book_tag (book_id, tag_id) VALUES (4, 22);
-INSERT INTO book_tag (book_id, tag_id) VALUES (2, 23);
+INSERT INTO book_tag (book_id, tag_id, approved) VALUES (1, 21, 1);
+INSERT INTO book_tag (book_id, tag_id, approved) VALUES (3, 21, 1);
+INSERT INTO book_tag (book_id, tag_id, approved) VALUES (4, 21, 0);
+INSERT INTO book_tag (book_id, tag_id, approved) VALUES (1, 22, 0);
+INSERT INTO book_tag (book_id, tag_id, approved) VALUES (4, 22, 0);
+INSERT INTO book_tag (book_id, tag_id, approved) VALUES (2, 23, 1);
 
 DROP TABLE IF EXISTS book_tag_alt;
 CREATE TABLE book_tag_alt (

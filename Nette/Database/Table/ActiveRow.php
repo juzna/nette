@@ -106,7 +106,7 @@ class ActiveRow extends Nette\Object implements \IteratorAggregate, \ArrayAccess
 	 * @param  string
 	 * @return ActiveRow or NULL if the row does not exist
 	 */
-	public function ref($key, $throughColumn = NULL)
+	public function toOne($key, $throughColumn = NULL)
 	{
 		if (!$throughColumn) {
 			list($key, $throughColumn) = $this->table->getConnection()->getDatabaseReflection()->getBelongsToReference($this->table->getName(), $key);
@@ -114,6 +114,7 @@ class ActiveRow extends Nette\Object implements \IteratorAggregate, \ArrayAccess
 
 		return $this->getReference($key, $throughColumn);
 	}
+	public function ref($key, $throughColumn = NULL) { return $this->toOne($key, $throughColumn); }
 
 
 
@@ -123,7 +124,7 @@ class ActiveRow extends Nette\Object implements \IteratorAggregate, \ArrayAccess
 	 * @param  string
 	 * @return GroupedSelection
 	 */
-	public function related($key, $throughColumn = NULL)
+	public function toMany($key, $throughColumn = NULL)
 	{
 		if (strpos($key, '.') !== FALSE) {
 			list($key, $throughColumn) = explode('.', $key);
@@ -133,6 +134,20 @@ class ActiveRow extends Nette\Object implements \IteratorAggregate, \ArrayAccess
 
 		return $this->table->getReferencingTable($key, $throughColumn, $this[$this->table->getPrimary()]);
 	}
+	public function related($key, $throughColumn = NULL) { return $this->toMany($key, $throughColumn); }
+
+
+
+	public function relatedManyToMany($joinTable, $joinColumn, $targetTable = NULL, $joinColumn2 = NULL) {
+		if (func_num_args() === 2) { // join table + target table
+			$targetTable = $joinColumn; // move arg
+			list ($joinTable, $joinColumn) = $this->table->getConnection()->getDatabaseReflection()->getHasManyReference($this->table->getName(), $joinTable);
+			list (, $joinColumn2) = $this->table->getConnection()->getDatabaseReflection()->getHasManyReference($targetTable, $joinTable);
+		}
+
+		return $this->table->getMNReference($joinTable, $joinColumn, $targetTable, $joinColumn2, $this[$this->table->getPrimary()]);
+	}
+	public function relatedMN($joinTable, $joinColumn, $targetTable = NULL, $joinColumn2 = NULL) { return $this->relatedManyToMany($joinTable, $joinColumn, $targetTable, $joinColumn2); }
 
 
 

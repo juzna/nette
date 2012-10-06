@@ -185,7 +185,20 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 
 
 	/**
-	 * Loads cache of previous accessed columns and returns it.
+	 * Get query to fetch primary keys; can be used in sub-queries
+	 * @return string
+	 */
+	public function getPrimaryKeyListSql() {
+		$builder = clone $this->sqlBuilder;
+		$builder->resetSelect();
+		$builder->select($this->primary);
+		return $builder->getSql();
+	}
+
+
+
+	/**
+	 * Loads cache of previous accessed columns and returns it
 	 * @internal
 	 * @return array|false
 	 */
@@ -493,7 +506,12 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 
 	protected function createRow(array $row)
 	{
-		return new ActiveRow($row, $this);
+		if ($factory = $this->connection->getRowFactory()) {
+			return $factory->createRow($row, $this);
+
+		} else {
+			return new ActiveRow($row, $this);
+		}
 	}
 
 
@@ -724,6 +742,28 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 
 
 
+	public function getMNReference($joinTable, $joinColumn, $targetTable, $joinColumn2, $active = NULL) {
+		$p = & $this->getReferencingCachedData("MN-prototype:$targetTable"); // FIXME: make it more unique
+		if (!$p) {
+			// Get join mapping
+			{
+				$join = $this->connection->table($joinTable)->where("$joinTable.$joinColumn", array_keys((array)$this->rows));
+
+				$mapping = array();
+				foreach($join as $row) $mapping[$row->$joinColumn2][] = $row->$joinColumn; // tagId -> bookId[]
+			}
+
+			$p = new MNGroupedSelection($this, $targetTable, $mapping);
+			$p->where("$targetTable.{$p->primary}", array_keys($mapping));
+		}
+
+		$c = clone $p; // clone prototype
+		$c->setActive($active);
+		return $c;
+	}
+
+
+
 	/********************* interface Iterator ****************d*g**/
 
 
@@ -822,6 +862,32 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 	{
 		$this->execute();
 		unset($this->data[$key]);
+	}
+
+
+
+	/**
+	 * Fetch only the first column
+	 * @return array
+	 */
+	public function fetchColumn($col = 0) {
+		$result = array();
+		foreach ($this as $row) {
+			$tmp = $row->toArray();
+			$result[] = $tmp[$col];
+		}
+		return $result;
+	}
+
+
+
+	/**
+	 * Convenient method to fetch all rows indexed by a column (or a primary key)
+	 * @param string $key
+	 * @return ActiveRow[]
+	 */
+	public function fetchIndexed($key = NULL) {
+		return $this->fetchPairs($key ? : $this->primary);
 	}
 
 }

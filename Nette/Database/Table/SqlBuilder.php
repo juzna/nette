@@ -127,6 +127,13 @@ class SqlBuilder extends Nette\Object
 	}
 
 
+	public function resetSelect()
+	{
+		$this->dirty();
+		$this->select = array();
+	}
+
+
 
 	public function addWhere($condition, $parameters = array())
 	{
@@ -137,6 +144,7 @@ class SqlBuilder extends Nette\Object
 		}
 
 		$this->conditions[$hash] = $condition;
+//		$condition = $this->prefixColumns($condition); // not ambiguous
 		$condition = $this->removeExtraTables($condition);
 		$condition = $this->tryDelimite($condition);
 
@@ -383,6 +391,13 @@ class SqlBuilder extends Nette\Object
 	protected function removeExtraTables($expression)
 	{
 		return preg_replace('~(?:\\b[a-z_][a-z0-9_.:]*[.:])?([a-z_][a-z0-9_]*)[.:]([a-z_*])~i', '\\1.\\2', $expression); // rewrite tab1.tab2.col
+	}
+
+
+
+	protected function prefixColumns($expression)
+	{
+		return preg_replace('~(?<!\\.)(\\b[a-z_][a-z0-9]*)\\b(?!\\.)~i', "{$this->selection->name}.\\1", $expression); // rewrite col -> tab.col
 	}
 
 }

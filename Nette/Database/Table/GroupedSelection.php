@@ -21,19 +21,12 @@ use Nette;
  *
  * @author     Jakub Vrana
  * @author     Jan Skrasek
+ * @author     Jan Dolecek
  */
-class GroupedSelection extends Selection
+class GroupedSelection extends AbstractGroupedSelection
 {
-	/** @var Selection referenced table */
-	protected $refTable;
-
 	/** @var string grouping column name */
 	protected $column;
-
-	/** @var int primary key */
-	protected $active;
-
-
 
 	/**
 	 * Creates filtered and grouped table representation.
@@ -43,25 +36,13 @@ class GroupedSelection extends Selection
 	 */
 	public function __construct(Selection $refTable, $table, $column)
 	{
-		parent::__construct($refTable->connection, $table);
-		$this->refTable = $refTable;
+		parent::__construct($refTable, $table);
 		$this->column = $column;
 	}
 
 
 
-	/**
-	 * Sets active group.
-	 * @internal
-	 * @param  int  primary key of grouped rows
-	 * @return GroupedSelection
-	 */
-	public function setActive($active)
-	{
-		$this->active = $active;
-		return $this;
-	}
-
+	/*****************  sql selectors  *****************j*d*/
 
 
 	/** @deprecated */
@@ -101,106 +82,38 @@ class GroupedSelection extends Selection
 	/********************* aggregations ****************d*g**/
 
 
-
-	public function aggregation($function)
+	protected function calculateAggregation($function)
 	{
-		$aggregation = & $this->getRefTable($refPath)->aggregation[$refPath . $function . $this->sqlBuilder->buildSelectQuery() . json_encode($this->sqlBuilder->getParameters())];
+		$aggregation = array();
 
-		if ($aggregation === NULL) {
-			$aggregation = array();
+		$selection = $this->createSelectionInstance();
+		$selection->getSqlBuilder()->importConditions($this->getSqlBuilder());
+		$selection->select($function);
+		$selection->select("$this->name.$this->column");
+		$selection->group("$this->name.$this->column");
 
-			$selection = $this->createSelectionInstance();
-			$selection->getSqlBuilder()->importConditions($this->getSqlBuilder());
-			$selection->select($function);
-			$selection->select("$this->name.$this->column");
-			$selection->group("$this->name.$this->column");
-
-			foreach ($selection as $row) {
-				$aggregation[$row[$this->column]] = $row;
-			}
+		foreach ($selection as $row) {
+			$aggregation[$row[$this->column]] = $row;
 		}
 
-		if (isset($aggregation[$this->active])) {
-			foreach ($aggregation[$this->active] as $val) {
-				return $val;
-			}
-		}
+		return $aggregation;
 	}
 
 
-
-	public function count($column = NULL)
+	protected function doMapping(&$rows, &$output, $limit)
 	{
-		$return = parent::count($column);
-		return isset($return) ? $return : 0;
-	}
-
-
-
-	/********************* internal ****************d*g**/
-
-
-
-	protected function execute()
-	{
-		if ($this->rows !== NULL) {
-			return;
-		}
-
-		$hash = md5($this->sqlBuilder->buildSelectQuery() . json_encode($this->sqlBuilder->getParameters()));
-
-		$referencing = & $this->getRefTable($refPath)->referencing[$refPath . $hash];
-		$this->rows = & $referencing['rows'];
-		$this->referenced = & $referencing['refs'];
-		$this->accessed = & $referencing['accessed'];
-		$refData = & $referencing['data'];
-
-		if ($refData === NULL) {
-			$limit = $this->sqlBuilder->getLimit();
-			$rows = count($this->refTable->rows);
-			if ($limit && $rows > 1) {
-				$this->sqlBuilder->setLimit(NULL, NULL);
+		$offset = array();
+		foreach ($this->rows as $key => $row) {
+			$ref = & $output[$row[$this->column]];
+			$skip = & $offset[$row[$this->column]];
+			if ($limit === NULL || $rows <= 1 || (count($ref) < $limit && $skip >= $this->sqlBuilder->getOffset())) {
+				$ref[$key] = $row;
+			} else {
+				unset($this->rows[$key]);
 			}
-			parent::execute();
-			$this->sqlBuilder->setLimit($limit, NULL);
-			$refData = array();
-			$offset = array();
-			foreach ($this->rows as $key => $row) {
-				$ref = & $refData[$row[$this->column]];
-				$skip = & $offset[$row[$this->column]];
-				if ($limit === NULL || $rows <= 1 || (count($ref) < $limit && $skip >= $this->sqlBuilder->getOffset())) {
-					$ref[$key] = $row;
-				} else {
-					unset($this->rows[$key]);
-				}
-				$skip++;
-				unset($ref, $skip);
-			}
+			$skip++;
+			unset($ref, $skip);
 		}
-
-		$this->data = & $refData[$this->active];
-		if ($this->data === NULL) {
-			$this->data = array();
-		} else {
-			foreach ($this->data as $row) {
-				$row->setTable($this); // injects correct parent GroupedSelection
-			}
-			reset($this->data);
-		}
-	}
-
-
-
-	protected function getRefTable(& $refPath)
-	{
-		$refObj = $this->refTable;
-		$refPath = $this->name . '.';
-		while ($refObj instanceof GroupedSelection) {
-			$refPath .= $refObj->name . '.';
-			$refObj = $refObj->refTable;
-		}
-
-		return $refObj;
 	}
 
 
@@ -252,6 +165,90 @@ class GroupedSelection extends Selection
 
 		$this->sqlBuilder = $builder;
 		return $return;
+	}
+
+
+	/*****************  misc  *****************j*d*/
+
+	public function related($key, $throughColumn = NULL) { return $this->toMany($key, $throughColumn); }
+	public function toMany($key, $throughColumn = NULL)
+	{
+		if (strpos($key, '.') !== FALSE) {
+			list($key, $throughColumn) = explode('.', $key);
+		} elseif (!is_string($throughColumn)) {
+			list($key, $throughColumn) = $this->getConnection()->getDatabaseReflection()->getHasManyReference($this->getName(), $key);
+		}
+		$table = $key;
+
+
+		$p = & $this->getRefTable($refPath)->referencing[$refPath . "-DoubleRelated:$table.$throughColumn"];
+		if (!$p) {
+			// Prepare mapping
+			{
+				if(!$this->sqlBuilder->getSelect()) {
+					$this->sqlBuilder->addSelect("$this->primary, $this->column");
+				}
+
+				$this->execute();
+				$mapping = array();
+				foreach($this->rows as $row) $mapping[$row->{$this->primary}] = $row->{$this->column}; // authorId -> companyId
+			}
+
+			$p = $this->createDoubleGroupedSelectionInstance($table, $throughColumn, $mapping);
+			$p->where("$table.$throughColumn", array_keys($mapping));
+		}
+
+		$c = clone $p; // clone prototype
+		$c->setActive($this->active);
+		return $c;
+	}
+
+
+
+	protected function createDoubleGroupedSelectionInstance($table, $throughColumn, $mapping)
+	{
+		return new DoubleGroupedSelection($this, $table, $throughColumn, $mapping);
+	}
+
+
+
+	public function ref($key, $throughColumn = NULL) { return $this->toOne($key, $throughColumn); }
+	public function toOne($key, $throughColumn = NULL)
+	{
+		if (!$throughColumn) {
+			list($key, $throughColumn) = $this->connection->getDatabaseReflection()->getBelongsToReference($this->name, $key);
+		}
+		$table = $key;
+
+
+
+		$p = & $this->getRefTable($refPath)->referencing[$refPath . "1-n-1:$table.$throughColumn"];
+		if (!$p) {
+			// Prepare mapping
+			{
+				if(!$this->sqlBuilder->getSelect()) {
+					$this->sqlBuilder->addSelect("$this->column, $throughColumn");
+				}
+
+				$this->execute();
+				$mapping = array();
+				foreach($this->rows as $row) $mapping[$row->$throughColumn][] = $row->{$this->column}; // tagId -> bookId[]
+			}
+
+			$p = $this->createMNGroupedSelectionInstance($table, $mapping);
+			$p->where("$table.{$p->primary}", array_keys($mapping));
+		}
+
+		$c = clone $p; // clone prototype
+		$c->setActive($this->active);
+		return $c;
+	}
+
+
+
+	protected function createMNGroupedSelectionInstance($table, $mapping)
+	{
+		return new MNGroupedSelection($this, $table, $mapping);
 	}
 
 }
