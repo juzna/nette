@@ -180,12 +180,12 @@ class GroupedSelection extends AbstractGroupedSelection
 		$table = $key;
 
 
-		$p = & $this->getReferencingCachedData("DoubleRelated:$table.$throughColumn");
+		$p = & $this->getRefTable($refPath)->referencing[$refPath . "-DoubleRelated:$table.$throughColumn"];
 		if (!$p) {
 			// Prepare mapping
 			{
 				if(!$this->sqlBuilder->getSelect()) {
-					$this->sqlBuilder->select("$this->primary, $this->column");
+					$this->sqlBuilder->addSelect("$this->primary, $this->column");
 				}
 
 				$this->execute();

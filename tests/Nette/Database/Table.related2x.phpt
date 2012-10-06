@@ -16,10 +16,40 @@ Nette\Database\Helpers::loadFromFile($connection, __DIR__ . "/{$driverName}-nett
 
 
 
-foreach ($connection->table('company') as /** @var \Nette\Database\Table\ActiveRow $company */ $company) {
-	echo "Company $company->name:\n";
+// full list
+$log = array();
+foreach ($connection->table('company') as $company) {
+	$log[] = "Company $company->name";
 
-	foreach ($company->related('author')->where('name LIKE "J%"')->related('book') as $book) {
-		echo " $book->id: $book->title\n";
+	foreach ($company->related('author')->related('book') as $book) {
+		$log[] = " $book->id: $book->title";
 	}
 }
+Assert::equal(array(
+	'Company Facebook',
+	' 1: 1001 tipu a triku pro PHP',
+	' 2: JUSH',
+	'Company Nette Foundation',
+	' 3: Nette',
+	' 4: Dibi',
+	'Company JuznaSoft',
+), $log);
+
+
+
+// with conditionals
+$log = array();
+foreach ($connection->table('company') as $company) {
+	$log[] = "Company $company->name";
+
+	foreach ($company->related('author')->where('name LIKE "J%"')->related('book') as $book) {
+		$log[] = " $book->id: $book->title";
+	}
+}
+Assert::equal(array(
+	'Company Facebook',
+	' 1: 1001 tipu a triku pro PHP',
+	' 2: JUSH',
+	'Company Nette Foundation',
+	'Company JuznaSoft',
+), $log);
