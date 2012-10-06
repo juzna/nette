@@ -136,7 +136,7 @@ class GroupedSelection extends AbstractGroupedSelection
 			$data[$this->column] = $this->active;
 		}
 
-		return parent::insert($data);
+		return Selection::insert($data);
 	}
 
 
@@ -147,7 +147,7 @@ class GroupedSelection extends AbstractGroupedSelection
 
 		$this->sqlBuilder = new SqlBuilder($this);
 		$this->where($this->column, $this->active);
-		$return = parent::update($data);
+		$return = Selection::update($data);
 
 		$this->sqlBuilder = $builder;
 		return $return;
@@ -161,7 +161,7 @@ class GroupedSelection extends AbstractGroupedSelection
 
 		$this->sqlBuilder = new SqlBuilder($this);
 		$this->where($this->column, $this->active);
-		$return = parent::delete();
+		$return = Selection::delete();
 
 		$this->sqlBuilder = $builder;
 		return $return;

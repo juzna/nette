@@ -150,4 +150,25 @@ abstract class AbstractGroupedSelection extends Selection
 		return $refObj;
 	}
 
+
+
+	/*****************  manipulation - not supported  *****************j*d*/
+
+
+
+	public function insert($data)
+	{
+		throw new \Nette\NotSupportedException('This method must be overloaded');
+	}
+
+	public function update($data)
+	{
+		throw new \Nette\NotSupportedException('This method must be overloaded');
+	}
+
+	public function delete()
+	{
+		throw new \Nette\NotSupportedException('This method must be overloaded');
+	}
+
 }
