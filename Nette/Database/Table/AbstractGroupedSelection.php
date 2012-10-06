@@ -27,9 +27,6 @@ abstract class AbstractGroupedSelection extends Selection
 	/** @var Selection referenced table */
 	protected $refTable;
 
-	/** @var string grouping column name */
-	protected $column;
-
 	/** @var int primary key */
 	protected $active;
 
@@ -39,13 +36,11 @@ abstract class AbstractGroupedSelection extends Selection
 	 * Creates filtered and grouped table representation.
 	 * @param  Selection  $refTable
 	 * @param  string  database table name
-	 * @param  string  joining column
 	 */
-	public function __construct(Selection $refTable, $table, $column)
+	public function __construct(Selection $refTable, $table)
 	{
 		parent::__construct($refTable->connection, $table);
 		$this->refTable = $refTable;
-		$this->column = $column;
 	}
 
 
@@ -64,41 +59,10 @@ abstract class AbstractGroupedSelection extends Selection
 
 
 
-	/** @deprecated */
-	public function through($column)
-	{
-		trigger_error(__METHOD__ . '() is deprecated; use ' . __CLASS__ . '::related("' . $this->name . '", "' . $column . '") instead.', E_USER_DEPRECATED);
-		$this->column = $column;
-		$this->delimitedColumn = $this->refTable->connection->getSupplementalDriver()->delimite($this->column);
-		return $this;
-	}
-
-
-
-	public function select($columns)
-	{
-		if (!$this->sqlBuilder->getSelect()) {
-			$this->sqlBuilder->addSelect("$this->name.$this->column");
-		}
-
-		return parent::select($columns);
-	}
-
-
-
-	public function order($columns)
-	{
-		if (!$this->sqlBuilder->getOrder()) {
-			// improve index utilization
-			$this->sqlBuilder->addOrder("$this->name.$this->column" . (preg_match('~\\bDESC$~i', $columns) ? ' DESC' : ''));
-		}
-
-		return parent::order($columns);
-	}
-
-
-
 	/********************* aggregations ****************d*g**/
+
+
+	abstract protected function calculateAggregation($function);
 
 
 
@@ -107,17 +71,7 @@ abstract class AbstractGroupedSelection extends Selection
 		$aggregation = & $this->getRefTable($refPath)->aggregation[$refPath . $function . $this->sqlBuilder->buildSelectQuery() . json_encode($this->sqlBuilder->getParameters())];
 
 		if ($aggregation === NULL) {
-			$aggregation = array();
-
-			$selection = $this->createSelectionInstance();
-			$selection->getSqlBuilder()->importConditions($this->getSqlBuilder());
-			$selection->select($function);
-			$selection->select("$this->name.$this->column");
-			$selection->group("$this->name.$this->column");
-
-			foreach ($selection as $row) {
-				$aggregation[$row[$this->column]] = $row;
-			}
+			$aggregation = $this->calculateAggregation($function);
 		}
 
 		if (isset($aggregation[$this->active])) {
@@ -138,6 +92,10 @@ abstract class AbstractGroupedSelection extends Selection
 
 
 	/********************* internal ****************d*g**/
+
+
+
+	abstract protected function doMapping(&$rows, &$output, $limit);
 
 
 
@@ -164,18 +122,7 @@ abstract class AbstractGroupedSelection extends Selection
 			parent::execute();
 			$this->sqlBuilder->setLimit($limit, NULL);
 			$refData = array();
-			$offset = array();
-			foreach ($this->rows as $key => $row) {
-				$ref = & $refData[$row[$this->column]];
-				$skip = & $offset[$row[$this->column]];
-				if ($limit === NULL || $rows <= 1 || (count($ref) < $limit && $skip >= $this->sqlBuilder->getOffset())) {
-					$ref[$key] = $row;
-				} else {
-					unset($this->rows[$key]);
-				}
-				$skip++;
-				unset($ref, $skip);
-			}
+			$this->doMapping($this->rows, $refData, $limit);
 		}
 
 		$this->data = & $refData[$this->active];
@@ -195,63 +142,12 @@ abstract class AbstractGroupedSelection extends Selection
 	{
 		$refObj = $this->refTable;
 		$refPath = $this->name . '.';
-		while ($refObj instanceof GroupedSelection) {
+		while ($refObj instanceof AbstractGroupedSelection) {
 			$refPath .= $refObj->name . '.';
 			$refObj = $refObj->refTable;
 		}
 
 		return $refObj;
-	}
-
-
-
-	/********************* manipulation ****************d*g**/
-
-
-
-	public function insert($data)
-	{
-		if ($data instanceof \Traversable && !$data instanceof Selection) {
-			$data = iterator_to_array($data);
-		}
-
-		if (Nette\Utils\Validators::isList($data)) {
-			foreach (array_keys($data) as $key) {
-				$data[$key][$this->column] = $this->active;
-			}
-		} else {
-			$data[$this->column] = $this->active;
-		}
-
-		return parent::insert($data);
-	}
-
-
-
-	public function update($data)
-	{
-		$builder = $this->sqlBuilder;
-
-		$this->sqlBuilder = new SqlBuilder($this);
-		$this->where($this->column, $this->active);
-		$return = parent::update($data);
-
-		$this->sqlBuilder = $builder;
-		return $return;
-	}
-
-
-
-	public function delete()
-	{
-		$builder = $this->sqlBuilder;
-
-		$this->sqlBuilder = new SqlBuilder($this);
-		$this->where($this->column, $this->active);
-		$return = parent::delete();
-
-		$this->sqlBuilder = $builder;
-		return $return;
 	}
 
 }

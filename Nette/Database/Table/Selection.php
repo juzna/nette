@@ -729,6 +729,28 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 
 
 
+	public function getMNReference($joinTable, $joinColumn, $targetTable, $joinColumn2, $active = NULL) {
+		$p = & $this->getReferencingCachedData("MN-prototype:$targetTable"); // FIXME: make it more unique
+		if (!$p) {
+			// Get join mapping
+			{
+				$join = $this->connection->table($joinTable)->where("$joinTable.$joinColumn", array_keys((array)$this->rows));
+
+				$mapping = array();
+				foreach($join as $row) $mapping[$row->$joinColumn2][] = $row->$joinColumn; // tagId -> bookId[]
+			}
+
+			$p = new MNGroupedSelection($this, $targetTable, $mapping);
+			$p->where("$targetTable.{$p->primary}", array_keys($mapping));
+		}
+
+		$c = clone $p; // clone prototype
+		$c->setActive($active);
+		return $c;
+	}
+
+
+
 	/********************* interface Iterator ****************d*g**/
 
 

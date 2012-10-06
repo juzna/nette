@@ -136,6 +136,18 @@ class ActiveRow extends Nette\Object implements \IteratorAggregate, \ArrayAccess
 
 
 
+	public function relatedMN($joinTable, $joinColumn, $targetTable = NULL, $joinColumn2 = NULL) {
+		if (func_num_args() === 2) { // join table + target table
+			$targetTable = $joinColumn; // move arg
+			list ($joinTable, $joinColumn) = $this->table->getConnection()->getDatabaseReflection()->getHasManyReference($this->table->getName(), $joinTable);
+			list (, $joinColumn2) = $this->table->getConnection()->getDatabaseReflection()->getHasManyReference($targetTable, $joinTable);
+		}
+
+		return $this->table->getMNReference($joinTable, $joinColumn, $targetTable, $joinColumn2, $this[$this->table->getPrimary()]);
+	}
+
+
+
 	/**
 	 * Updates row.
 	 * @param  array or NULL for all modified values
