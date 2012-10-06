@@ -19,6 +19,8 @@ use Nette;
  * Double grouped selection, i.e. (1:n)^2
  * E.g. getting all books written by authors of a given company (company -> author -> book)
  *
+ * Column ($column, e.g. author_id) will be mapped via $mapping to sourceId (i.e. $companyId)
+ *
  * @author     Jan Dolecek
  */
 class DoubleGroupedSelection extends GroupedSelection

@@ -53,3 +53,27 @@ Assert::equal(array(
 	'Company Nette Foundation',
 	'Company JuznaSoft',
 ), $log);
+
+
+
+// 3x
+QueryLogger::clear();
+foreach ($connection->table('company') as $company) {
+	echo "Company $company->name\n";
+	foreach ($company->related('author')->related('book')->related('book_tag') as $tag) {
+		echo $tag->approved . ', ';
+	}
+}
+dump(QueryLogger::$queries);
+
+
+
+// 3x + ref
+QueryLogger::clear();
+foreach ($connection->table('company') as $company) {
+	echo "Company $company->name\n";
+	foreach ($company->related('author')->related('book')->related('book_tag')->ref('tag') as $tag) {
+		echo $tag->name . ', ';
+	}
+}
+dump(QueryLogger::$queries);
