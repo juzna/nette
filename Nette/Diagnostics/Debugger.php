@@ -427,7 +427,7 @@ final class Debugger
 					}
 
 				} elseif (!self::fireLog($exception, self::ERROR)) { // AJAX or non-HTML mode
-					$file = self::log($exception);
+					$file = basename(self::log($exception));
 					if (!headers_sent()) {
 						header("X-Nette-Error-Log: $file");
 					}
