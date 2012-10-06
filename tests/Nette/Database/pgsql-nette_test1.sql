@@ -1,18 +1,32 @@
 DROP SCHEMA IF EXISTS public CASCADE;
 CREATE SCHEMA public;
 
+CREATE TABLE company (
+  id serial NOT NULL,
+	name varchar(30) NOT NULL,
+	web varchar(100) NOT NULL,
+	PRIMARY KEY(id)
+);
+
+INSERT INTO company (id, name, web) VALUES (41, 'Facebook', 'http://facebook.com');
+INSERT INTO company (id, name, web) VALUES (42, 'Nette Foundation', 'http://nette.org');
+INSERT INTO company (id, name, web) VALUES (43, 'JuznaSoft', 'http://juzna.cz');
+SELECT setval('company_id_seq', 43, TRUE);
 
 CREATE TABLE author (
 	id serial NOT NULL,
 	name varchar(30) NOT NULL,
 	web varchar(100) NOT NULL,
 	born date DEFAULT NULL,
-	PRIMARY KEY(id)
+	company_id int DEFAULT NULL,
+	PRIMARY KEY(id),
+	CONSTRAINT author_company FOREIGN KEY (company_id) REFERENCES company (id)
 );
 
-INSERT INTO author (id, name, web, born) VALUES (11, 'Jakub Vrana', 'http://www.vrana.cz/', NULL);
-INSERT INTO author (id, name, web, born) VALUES (12, 'David Grudl', 'http://davidgrudl.com/', NULL);
-SELECT setval('author_id_seq', 12, TRUE);
+INSERT INTO author (id, name, web, born, company_id) VALUES (11, 'Jakub Vrana', 'http://www.vrana.cz/', NULL, 41);
+INSERT INTO author (id, name, web, born, company_id) VALUES (12, 'David Grudl', 'http://davidgrudl.com/', NULL, 42);
+INSERT INTO author (id, name, web, born, company_id) VALUES (13, 'Jan Dolecek', 'http://blog.juzna.cz/', NULL, 43);
+SELECT setval('author_id_seq', 13, TRUE);
 
 CREATE TABLE tag (
 	id serial NOT NULL,
