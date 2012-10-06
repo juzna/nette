@@ -16,21 +16,37 @@ Nette\Database\Helpers::loadFromFile($connection, __DIR__ . "/{$driverName}-nett
 
 
 
-// full parameters given
+// simple
+$log = array();
 foreach ($connection->table('book')->where('author_id', 11) as /** @var \Nette\Database\Table\ActiveRow $book */ $book) {
-	echo "$book->id: $book->title\n";
+	$log[] = "$book->id: $book->title";
 
-	foreach ($book->relatedMN('book_tag', 'book_id', 'tag', 'tag_id') as $tag) {
-		echo " - $tag->name\n";
+	foreach ($book->related('book_tag')->ref('tag') as $tag) {
+		$log[] = " - $tag->name";
 	}
 }
+Assert::equal(array(
+	'1: 1001 tipu a triku pro PHP',
+	' - PHP',
+	' - MySQL',
+	'2: JUSH',
+	' - JavaScript',
+), $log);
 
 
-// just tables (and guess the column names)
+
+// with conditionals
+$log = array();
 foreach ($connection->table('book')->where('author_id', 11) as /** @var \Nette\Database\Table\ActiveRow $book */ $book) {
-	echo "$book->id: $book->title\n";
+	$log[] = "$book->id: $book->title";
 
-	foreach ($book->relatedMN('book_tag', 'tag') as $tag) {
-		echo " - $tag->name\n";
+	foreach ($book->related('book_tag')->where('approved = 1')->ref('tag') as $tag) {
+		$log[] =  " - $tag->name";
 	}
 }
+Assert::equal(array(
+	'1: 1001 tipu a triku pro PHP',
+	' - PHP',
+	'2: JUSH',
+	' - JavaScript',
+), $log);
