@@ -261,12 +261,12 @@ final class Debugger
 		if (self::$logDirectory) {
 			ini_set('error_log', self::$logDirectory . '/php_error.log');
 		}
-		if (isset($_SERVER['HTTP_NETTE_DEBUG_HELPER'])) {
+		if (isset($_SERVER['HTTP_NETTE_DEBUGGER_STORE_AJAX'])) {
 			$dir = TEMP_DIR . '/_Nette.DebugHelper';
 			if (!file_exists($dir)) {
 				mkdir($dir);
 			}
-			self::$intermediateDebugFile = tempnam($dir, $_SERVER['HTTP_NETTE_DEBUG_HELPER']);
+			self::$intermediateDebugFile = tempnam($dir, $_SERVER['HTTP_NETTE_DEBUGGER_STORE_AJAX']);
 			if (!headers_sent()) {
 				header("Nette-Debug-Nonce: " . basename(self::$intermediateDebugFile));
 			}
