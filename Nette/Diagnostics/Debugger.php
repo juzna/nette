@@ -513,7 +513,9 @@ final class Debugger
 			return FALSE; // calls normal error handler to fill-in error_get_last()
 
 		} elseif (!self::$productionMode && (is_bool(self::$strictMode) ? self::$strictMode : ((self::$strictMode & $severity) === $severity))) {
-			self::_exceptionHandler(new Nette\FatalErrorException($message, 0, $severity, $file, $line, $context));
+			$e = new Nette\FatalErrorException($message, 0, $severity, $file, $line, $context);
+//			self::_exceptionHandler($e);
+			self::log($e);
 		}
 
 		static $types = array(
