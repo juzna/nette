@@ -890,4 +890,20 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 		return $this->fetchPairs($key ? : $this->primary);
 	}
 
+
+
+	/**
+	 * Fetch single value
+	 */
+	public function fetchSingle()
+	{
+		$row = reset($this->data);
+		if ($row) {
+			$tmp = $row->toArray();
+			return $tmp[0];
+		} else {
+			return null;
+		}
+	}
+
 }
