@@ -260,6 +260,38 @@ class ResultSet extends Nette\Object implements \Iterator, IRowContainer
 	}
 
 
+
+	public function fetchObject()
+	{
+		return $this->fetch();
+	}
+
+
+
+	/**
+	 * Fetch only the first column
+	 *
+	 * @return array
+	 */
+	public function fetchColumn($col = 0)
+	{
+		$result = array();
+		foreach ($this as $row) {
+			$tmp = array_values(iterator_to_array($row));
+			$result[] = $tmp[$col];
+		}
+
+		return $result;
+	}
+
+
+
+	public function fetchSingle()
+	{
+		return $this->fetchField();
+	}
+
+
 	/**
 	 * Fetches single field.
 	 * @return mixed|FALSE
@@ -278,6 +310,20 @@ class ResultSet extends Nette\Object implements \Iterator, IRowContainer
 	{
 		return Helpers::toPairs($this->fetchAll(), $key, $value);
 	}
+
+
+
+	public function fetchIndexed($key)
+	{
+		$return = array();
+		// no $clone->select = array($key, $value) to allow efficient caching with repetitive calls with different parameters
+		foreach ($this as $row) {
+			$return[is_object($row[$key]) ? (string) $row[$key] : $row[$key]] = $row;
+		}
+
+		return $return;
+	}
+
 
 
 	/**
