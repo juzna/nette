@@ -497,6 +497,11 @@ final class Debugger
 			return NULL;
 		}
 
+		// juzna's hacks - omit some errors
+		if ($severity === E_NOTICE && strpos($message, 'Undefined variable:') === 0 && (strpos($file, 'templates/') || strpos($file, 'Template/'))) {
+			return; // we ain't give a shit about undefined variables in templates
+		}
+
 		if ($severity === E_RECOVERABLE_ERROR || $severity === E_USER_ERROR) {
 			if (Helpers::findTrace(/*5.2*PHP_VERSION_ID < 50205 ? debug_backtrace() : */debug_backtrace(FALSE), '*::__toString')) {
 				$previous = isset($context['e']) && $context['e'] instanceof \Exception ? $context['e'] : NULL;
