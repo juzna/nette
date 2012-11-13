@@ -53,7 +53,7 @@ class FormMacros extends MacroSet
 	public function macroForm(MacroNode $node, PhpWriter $writer)
 	{
 		$cmd = 'Nette\Latte\Macros\FormMacros::renderFormBegin($form = $_form = (is_object(%node.word) ? %node.word : $_control[%node.word]), %node.array, %var)';
-		if ($node->htmlNode) {
+		if ($node->prefix) {
 			$node->attrCode = $writer->write("<?php $cmd ?>", TRUE);
 
 		} else {
@@ -71,7 +71,7 @@ class FormMacros extends MacroSet
 	{
 		$cmd = 'Nette\Latte\Macros\FormMacros::renderFormEnd($_form, %var)';
 
-		if ($node->htmlNode) {
+		if ($node->prefix) {
 			$node->content = substr($node->content, 0, $node->htmlNode->offset) .
 				$writer->write("<?php $cmd ?>", true) .
 				substr($node->content, $node->htmlNode->offset);
