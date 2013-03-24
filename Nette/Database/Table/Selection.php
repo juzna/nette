@@ -873,7 +873,7 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 	public function fetchColumn($col = 0) {
 		$result = array();
 		foreach ($this as $row) {
-			$tmp = $row->toArray();
+			$tmp = is_numeric($col) ? array_values($row->toArray()) : $row->toArray();
 			$result[] = $tmp[$col];
 		}
 		return $result;
@@ -897,12 +897,13 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 	 */
 	public function fetchSingle()
 	{
-		$row = reset($this->data);
-		if ($row) {
-			$tmp = $row->toArray();
-			return $tmp[0];
-		} else {
-			return null;
+		foreach ($this as $row) {
+			if ($row) {
+				$tmp = array_values($row->toArray());
+				return $tmp[0];
+			} else {
+				return null;
+			}
 		}
 	}
 
