@@ -299,7 +299,7 @@ final class Debugger
 				: get_class($exception) . ": " . $exception->getMessage())
 				. " in " . $exception->getFile() . ":" . $exception->getLine();
 
-			$hash = md5($exception /*5.2*. (method_exists($exception, 'getPrevious') ? $exception->getPrevious() : (isset($exception->previous) ? $exception->previous : ''))*/);
+			$hash = md5($message);
 			$exceptionFilename = "exception-" . @date('Y-m-d-H-i-s') . "-$hash.html";
 			foreach (new \DirectoryIterator(self::$logDirectory) as $entry) {
 				if (strpos($entry, $hash)) {
