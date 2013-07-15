@@ -120,7 +120,7 @@ class Session extends Nette\Object
 		$nfTime = & $nf['Time'];
 		$time = time();
 		if ($time - $nfTime > self::REGENERATE_INTERVAL) {
-			$this->regenerated = $this->regenerated || isset($nfTime);
+//			$this->regenerated = $this->regenerated || isset($nfTime); // hotfix
 			$nfTime = $time;
 		}
 
