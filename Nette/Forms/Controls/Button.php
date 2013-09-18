@@ -23,12 +23,20 @@ use Nette;
 class Button extends BaseControl
 {
 
+	/** @var string Name of the element to be generated for all buttons; typically input or button */
+	public static $defaultButtonElementName = 'input';
+
+
+
 	/**
 	 * @param  string  caption
 	 */
 	public function __construct($caption = NULL)
 	{
 		parent::__construct($caption);
+		if ($this->control->getName() !== self::$defaultButtonElementName) {
+			$this->control->setName(self::$defaultButtonElementName);
+		}
 		$this->control->type = 'button';
 	}
 
@@ -53,7 +61,14 @@ class Button extends BaseControl
 	public function getControl($caption = NULL)
 	{
 		$control = parent::getControl();
-		$control->value = $this->translate($caption === NULL ? $this->caption : $caption);
+
+		$value = $this->translate($caption === NULL ? $this->caption : $caption);
+		if ($control->getName() === 'button') {
+			$control->setText($value);
+		} else {
+			$control->value = $value;
+		}
+
 		return $control;
 	}
 
