@@ -15,7 +15,7 @@ use Nette;
  *
  * @author     David Grudl
  */
-class DateTime extends \DateTime
+class DateTime extends \DateTime implements \JsonSerializable
 {
 	/** minute in seconds */
 	const MINUTE = 60;
@@ -84,6 +84,12 @@ class DateTime extends \DateTime
 	{
 		$ts = $this->format('U');
 		return is_float($tmp = $ts * 1) ? $ts : $tmp;
+	}
+
+
+	public function jsonSerialize()
+	{
+		return $this->format("Y-m-d H:i:s");
 	}
 
 }
