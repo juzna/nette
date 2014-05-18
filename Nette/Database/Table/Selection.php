@@ -974,13 +974,15 @@ class Selection extends Nette\Object implements \Iterator, IRowContainer, \Array
 
 	/**
 	 * Fetch only the first column
+	 * @param int|string $col Column offset or name
 	 * @return array
 	 */
 	public function fetchColumn($col = 0) {
 		$result = array();
 		foreach ($this as $row) {
-			$tmp = array_values($row->toArray());
-			$result[] = $tmp[$col];
+			$tmp = $row->toArray();
+			if (is_numeric($col)) $tmp = array_values($tmp);
+ 			$result[] = $tmp[$col];
 		}
 		return $result;
 	}
