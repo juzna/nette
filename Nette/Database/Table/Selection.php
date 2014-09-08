@@ -961,9 +961,10 @@ class Selection extends Nette\Object implements \Iterator, IRowContainer, \Array
 	 */
 	public function fetchSingle()
 	{
+		$this->execute();
 		$row = reset($this->data);
 		if ($row) {
-			$tmp = $row->toArray();
+			$tmp = array_values($row->toArray());
 			return $tmp[0];
 		} else {
 			return null;
